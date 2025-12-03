@@ -1,0 +1,371 @@
+@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<Web_Ban_Laptop.Models.Product>
+@{
+    ViewData["Title"] = "Sản phẩm";
+    var brands = ViewBag.Brands as List<string>;
+    var selectedSort = ViewBag.SelectedSort?.ToString();
+    var pageSize = Model.PageSize;
+    var totalItems = Model.TotalItemCount;
+    var startItem = (Model.PageNumber - 1) * pageSize + 1;
+    var endItem = Math.Min(Model.PageNumber * pageSize, totalItems);
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><span>Sản phẩm</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Page Header -->
+    <div class="product-listing-header">
+        <h1>Danh sách sản phẩm (@totalItems)</h1>
+        <div class="product-controls">
+            <label>Sắp xếp:</label>
+            <select class="form-select form-select-sm" style="width: auto;" 
+                    onchange="location.href='?sortBy=' + this.value + '&brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&pageSize=@ViewBag.PageSize'">
+                @if (string.IsNullOrEmpty(selectedSort))
+                {
+                    <option value="" selected>Mặc định</option>
+                    <option value="price_asc">Giá tăng dần</option>
+                    <option value="price_desc">Giá giảm dần</option>
+                    <option value="name_asc">Tên A-Z</option>
+                    <option value="name_desc">Tên Z-A</option>
+                }
+                else if (selectedSort == "price_asc")
+                {
+                    <option value="">Mặc định</option>
+                    <option value="price_asc" selected>Giá tăng dần</option>
+                    <option value="price_desc">Giá giảm dần</option>
+                    <option value="name_asc">Tên A-Z</option>
+                    <option value="name_desc">Tên Z-A</option>
+                }
+                else if (selectedSort == "price_desc")
+                {
+                    <option value="">Mặc định</option>
+                    <option value="price_asc">Giá tăng dần</option>
+                    <option value="price_desc" selected>Giá giảm dần</option>
+                    <option value="name_asc">Tên A-Z</option>
+                    <option value="name_desc">Tên Z-A</option>
+                }
+                else if (selectedSort == "name_asc")
+                {
+                    <option value="">Mặc định</option>
+                    <option value="price_asc">Giá tăng dần</option>
+                    <option value="price_desc">Giá giảm dần</option>
+                    <option value="name_asc" selected>Tên A-Z</option>
+                    <option value="name_desc">Tên Z-A</option>
+                }
+                else if (selectedSort == "name_desc")
+                {
+                    <option value="">Mặc định</option>
+                    <option value="price_asc">Giá tăng dần</option>
+                    <option value="price_desc">Giá giảm dần</option>
+                    <option value="name_asc">Tên A-Z</option>
+                    <option value="name_desc" selected>Tên Z-A</option>
+                }
+            </select>
+            <label class="ms-3">Hiển thị:</label>
+            <select class="form-select form-select-sm" style="width: auto;" 
+                    onchange="location.href='?pageSize=' + this.value + '&brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort'">
+                @{
+                    var currentPageSize = ViewBag.PageSize ?? 12;
+                    var is12Selected = currentPageSize == 12;
+                    var is16Selected = currentPageSize == 16;
+                }
+                @if (is12Selected)
+                {
+                    <option value="12" selected>12 sản phẩm</option>
+                    <option value="16">16 sản phẩm</option>
+                }
+                else if (is16Selected)
+                {
+                    <option value="12">12 sản phẩm</option>
+                    <option value="16" selected>16 sản phẩm</option>
+                }
+                else
+                {
+                    <option value="12" selected>12 sản phẩm</option>
+                    <option value="16">16 sản phẩm</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-md-3">
+            <div class="filter-sidebar">
+                <div class="filter-header">
+                    <h3>Bộ lọc</h3>
+                    <button class="btn-clear-filter" onclick="clearAllFilters()">Xóa tất cả</button>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ViewBag.SelectedBrand?.ToString()) || !string.IsNullOrEmpty(ViewBag.SelectedPriceRange?.ToString()) || !string.IsNullOrEmpty(ViewBag.SelectedRam?.ToString()) || !string.IsNullOrEmpty(ViewBag.SelectedCpu?.ToString()))
+                {
+                    <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                        <strong style="font-size: 14px; margin-bottom: 15px; display: block; color: var(--text);">Bộ lọc đã chọn:</strong>
+                        @if (!string.IsNullOrEmpty(ViewBag.SelectedBrand?.ToString()))
+                        {
+                            <span style="display: inline-block; background: var(--dark); padding: 6px 12px; border-radius: 6px; margin: 5px 5px 5px 0; font-size: 13px; color: var(--text-muted);">
+                                @ViewBag.SelectedBrand <a href="?brand=&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize" style="margin-left: 8px; color: var(--danger); text-decoration: none;">×</a>
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(ViewBag.SelectedPriceRange?.ToString()))
+                        {
+                            <span style="display: inline-block; background: var(--dark); padding: 6px 12px; border-radius: 6px; margin: 5px 5px 5px 0; font-size: 13px; color: var(--text-muted);">
+                                @(ViewBag.SelectedPriceRange == "under15" ? "Dưới 15tr" : ViewBag.SelectedPriceRange == "15-25" ? "15-25tr" : "Trên 25tr") 
+                                <a href="?brand=@ViewBag.SelectedBrand&priceRange=&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize" style="margin-left: 8px; color: var(--danger); text-decoration: none;">×</a>
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(ViewBag.SelectedRam?.ToString()))
+                        {
+                            <span style="display: inline-block; background: var(--dark); padding: 6px 12px; border-radius: 6px; margin: 5px 5px 5px 0; font-size: 13px; color: var(--text-muted);">
+                                RAM @ViewBag.SelectedRam 
+                                <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize" style="margin-left: 8px; color: var(--danger); text-decoration: none;">×</a>
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(ViewBag.SelectedCpu?.ToString()))
+                        {
+                            <span style="display: inline-block; background: var(--dark); padding: 6px 12px; border-radius: 6px; margin: 5px 5px 5px 0; font-size: 13px; color: var(--text-muted);">
+                                CPU @ViewBag.SelectedCpu 
+                                <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize" style="margin-left: 8px; color: var(--danger); text-decoration: none;">×</a>
+                            </span>
+                        }
+                    </div>
+                }
+
+                <!-- Brand Filter -->
+                @if (brands != null && brands.Any())
+                {
+                    <div class="filter-group">
+                        <div class="filter-group-title">
+                            <span>Hãng sản xuất</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        <ul class="filter-list">
+                            @foreach (var brand in brands)
+                            {
+                                <li>
+                                    <a href="?brand=@brand&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                        @brand
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <!-- Price Filter -->
+                <div class="filter-group">
+                    <div class="filter-group-title">
+                        <span>Khoảng giá</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <ul class="filter-list">
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=under15&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                Dưới 15 triệu
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=15-25&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                15 - 25 triệu
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=over25&ram=@ViewBag.SelectedRam&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                Trên 25 triệu
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- RAM Filter -->
+                <div class="filter-group">
+                    <div class="filter-group-title">
+                        <span>RAM</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <ul class="filter-list">
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=8GB&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                8GB
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=16GB&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                16GB
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=32GB&cpu=@ViewBag.SelectedCpu&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                32GB
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- CPU Filter -->
+                <div class="filter-group">
+                    <div class="filter-group-title">
+                        <span>CPU</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <ul class="filter-list">
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=i5&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                Intel Core i5
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?brand=@ViewBag.SelectedBrand&priceRange=@ViewBag.SelectedPriceRange&ram=@ViewBag.SelectedRam&cpu=i7&sortBy=@ViewBag.SelectedSort&pageSize=@ViewBag.PageSize">
+                                Intel Core i7
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product List -->
+        <div class="col-md-9">
+            <div style="margin-bottom: 25px; color: var(--text-muted); font-size: 15px;">
+                Hiển thị @startItem-@endItem trong tổng số @totalItems sản phẩm
+            </div>
+
+            @if (Model.Any())
+            {
+                <div class="product-grid">
+                    @foreach (var product in Model)
+                    {
+                        <div class="product-card">
+                            <div class="product-image">
+                                <div class="product-actions-overlay">
+                                    <button class="product-action-btn" onclick="quickView(@product.ProductId)" title="Xem nhanh">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="product-action-btn" onclick="toggleWishlist(@product.ProductId)" title="Yêu thích">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    <button class="product-action-btn" onclick="addToCompare(@product.ProductId)" title="So sánh">
+                                        <i class="fas fa-balance-scale"></i>
+                                    </button>
+                                </div>
+                                @if (product.DiscountPrice > 0)
+                                {
+                                    <span class="product-badge discount">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                                }
+                                <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                            </div>
+                            <div class="product-info">
+                                <h6 class="product-name">@product.ProductName</h6>
+                                <div class="product-price-wrapper">
+                                    <div class="product-price">
+                                        <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                        @if (product.DiscountPrice > 0 && product.DiscountPrice < product.Price)
+                                        {
+                                            <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                        }
+                                    </div>
+                                    @{
+                                        var avgRating = product.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                                            ? product.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                                            : 0;
+                                        var ratingCount = product.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                                    }
+                                    <div class="product-rating">
+                                        <div class="stars">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                                            }
+                                        </div>
+                                        <span class="reviews-count">(@ratingCount)</span>
+                                    </div>
+                                </div>
+                                <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    @{
+                        var pageSizeParam = ViewBag.PageSize ?? 12;
+                    }
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a href="@Url.Action("Index", new { page = Model.PageNumber - 1, brand = ViewBag.SelectedBrand, priceRange = ViewBag.SelectedPriceRange, ram = ViewBag.SelectedRam, cpu = ViewBag.SelectedCpu, sortBy = ViewBag.SelectedSort, pageSize = pageSizeParam })">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    }
+                    @for (int i = 1; i <= Model.PageCount; i++)
+                    {
+                        if (i == Model.PageNumber)
+                        {
+                            <span class="active">@i</span>
+                        }
+                        else if (i <= 3 || i > Model.PageCount - 2 || (i >= Model.PageNumber - 1 && i <= Model.PageNumber + 1))
+                        {
+                            <a href="@Url.Action("Index", new { page = i, brand = ViewBag.SelectedBrand, priceRange = ViewBag.SelectedPriceRange, ram = ViewBag.SelectedRam, cpu = ViewBag.SelectedCpu, sortBy = ViewBag.SelectedSort, pageSize = pageSizeParam })">@i</a>
+                        }
+                        else if (i == 4 || i == Model.PageCount - 1)
+                        {
+                            <span>...</span>
+                        }
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <a href="@Url.Action("Index", new { page = Model.PageNumber + 1, brand = ViewBag.SelectedBrand, priceRange = ViewBag.SelectedPriceRange, ram = ViewBag.SelectedRam, cpu = ViewBag.SelectedCpu, sortBy = ViewBag.SelectedSort, pageSize = pageSizeParam })">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div style="text-align: center; padding: 80px 20px;">
+                    <i class="fas fa-search" style="font-size: 80px; color: var(--text-muted); margin-bottom: 25px; opacity: 0.3;"></i>
+                    <h3 style="margin-bottom: 15px; color: var(--text);">Không tìm thấy sản phẩm</h3>
+                    <p style="color: var(--text-muted); font-size: 16px;">Vui lòng thử lại với bộ lọc khác</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background: var(--dark-light); border: 1px solid var(--border);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border);">
+                <h5 class="modal-title" style="color: var(--text);">Xem nhanh sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: brightness(0) invert(1);"></button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px;"></i>
+                    <p style="margin-top: 15px;">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function clearAllFilters() {
+            location.href = '@Url.Action("Index", "Shop")';
+        }
+        
+        // All other functions (quickView, toggleWishlist, addToCompare, showNotification) are in site.js
+    </script>
+}

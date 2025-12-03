@@ -1,0 +1,231 @@
+@{
+    ViewData["Title"] = "So sánh sản phẩm";
+    var products = ViewBag.Products as List<Web_Ban_Laptop.Models.Product>;
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><span>So sánh sản phẩm</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container" style="margin-bottom: 60px;">
+    <h1 style="font-size: 38px; font-weight: 700; margin-bottom: 40px; color: var(--text);">So sánh sản phẩm</h1>
+
+    @if (products != null && products.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th style="width: 200px;">Thông tin</th>
+                        @foreach (var product in products)
+                        {
+                            <th>
+                                <button class="btn-remove-compare" onclick="removeFromCompare(@product.ProductId)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <div class="compare-product-card">
+                                    <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop")" alt="@product.ProductName">
+                                    <h5>@product.ProductName</h5>
+                                    <div class="price-current" style="font-size: 20px; margin: 10px 0;">
+                                        @((product.DiscountPrice ?? product.Price).ToString("N0"))₫
+                                    </div>
+                                    <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn btn-primary btn-sm">
+                                        Xem chi tiết
+                                    </a>
+                                </div>
+                            </th>
+                        }
+                        @for (int i = products.Count; i < 3; i++)
+                        {
+                            <th style="background: var(--dark); color: var(--text-muted); text-align: center; padding: 40px;">
+                                <i class="fas fa-plus-circle" style="font-size: 32px;"></i>
+                                <p style="margin-top: 10px;">Thêm sản phẩm</p>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Giá bán</strong></td>
+                        @foreach (var product in products)
+                        {
+                            <td>
+                                <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                @if (product.DiscountPrice > 0)
+                                {
+                                    <div><span class="price-old">@product.Price.ToString("N0")₫</span></div>
+                                }
+                            </td>
+                        }
+                        @for (int i = products.Count; i < 3; i++)
+                        {
+                            <td>-</td>
+                        }
+                    </tr>
+                    @if (products.Any(p => p.ProductDetail != null))
+                    {
+                        <tr>
+                            <td><strong>CPU</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Cpu ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>RAM</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Ram ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>Ổ cứng</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.HardDrive ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>Màn hình</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Screen ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>VGA</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Vga ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>Hệ điều hành</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Os ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>Pin</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Battery ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>Trọng lượng</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Weight?.ToString() ?? "-") kg</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td><strong>Bảo hành</strong></td>
+                            @foreach (var product in products)
+                            {
+                                <td>@(product.ProductDetail?.Warranty ?? "-")</td>
+                            }
+                            @for (int i = products.Count; i < 3; i++)
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                    }
+                    <tr>
+                        <td><strong>Đánh giá</strong></td>
+                        @foreach (var product in products)
+                        {
+                            <td>
+                                @{
+                                    var avgRating = product.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                                        ? product.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                                        : 0;
+                                    var ratingCount = product.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                                }
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                                    }
+                                </div>
+                                <span style="font-size: 12px; color: var(--text-muted);">(@ratingCount đánh giá)</span>
+                            </td>
+                        }
+                        @for (int i = products.Count; i < 3; i++)
+                        {
+                            <td>-</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 80px 20px;">
+            <i class="fas fa-balance-scale" style="font-size: 100px; color: var(--text-muted); margin-bottom: 30px; opacity: 0.3;"></i>
+            <h2 style="margin-bottom: 15px; color: var(--text);">Chưa có sản phẩm để so sánh</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 16px;">Thêm sản phẩm vào danh sách so sánh để xem chi tiết</p>
+            <a href="@Url.Action("Index", "Shop")" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;">
+                <i class="fas fa-shopping-bag me-2"></i>Mua sắm ngay
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function removeFromCompare(productId) {
+            $.ajax({
+                url: '@Url.Action("RemoveFromCompare", "Compare")',
+                type: 'POST',
+                data: { productId: productId },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+    </script>
+}
+

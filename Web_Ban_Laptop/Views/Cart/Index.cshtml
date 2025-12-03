@@ -1,0 +1,168 @@
+@model List<Web_Ban_Laptop.Models.ViewModels.CartItemViewModel>
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    var cartTotal = ViewBag.CartTotal as decimal? ?? 0;
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><span>Giỏ hàng</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container cart-page">
+    <h1 style="font-size: 38px; font-weight: 700; margin-bottom: 40px; color: var(--text);">Giỏ hàng của tôi</h1>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            <div class="col-md-8">
+                @foreach (var item in Model)
+                {
+                    <div class="cart-item" id="cart-item-@item.ProductId">
+                        <div class="cart-item-image">
+                            <img src="@(item.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop")" alt="@item.ProductName">
+                        </div>
+                        <div class="cart-item-details">
+                            <h5>@item.ProductName</h5>
+                            <div class="product-price" style="margin: 15px 0;">
+                                <span class="price-current">@item.FinalPrice.ToString("N0")₫</span>
+                                @if (item.DiscountPrice > 0)
+                                {
+                                    <span class="price-old">@item.Price.ToString("N0")₫</span>
+                                }
+                            </div>
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <button type="button" onclick="updateQuantity(@item.ProductId, @(item.Quantity - 1))">-</button>
+                                    <input type="number" id="qty-@item.ProductId" value="@item.Quantity" min="1" 
+                                           onchange="updateQuantity(@item.ProductId, this.value)">
+                                    <button type="button" onclick="updateQuantity(@item.ProductId, @(item.Quantity + 1))">+</button>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 22px; color: var(--primary);" id="subtotal-@item.ProductId">@item.SubTotal.ToString("N0")₫</strong>
+                                </div>
+                                <button type="button" class="btn" style="background: var(--danger); color: white; padding: 10px 18px;" onclick="removeItem(@item.ProductId)">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="col-md-4">
+                <div class="cart-summary">
+                    <h3>Tóm tắt đơn hàng</h3>
+                    <div class="cart-summary-row">
+                        <span>Tạm tính:</span>
+                        <strong id="cart-total">@cartTotal.ToString("N0")₫</strong>
+                    </div>
+                    <div class="cart-summary-row">
+                        <span>Phí vận chuyển:</span>
+                        <span style="color: var(--success); font-weight: 600;">Miễn phí</span>
+                    </div>
+                    <div class="cart-summary-row">
+                        <strong style="color: var(--text);">Tổng tiền:</strong>
+                        <strong class="cart-summary-total" id="cart-total-final">@cartTotal.ToString("N0")₫</strong>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <a href="@Url.Action("Index", "Shop")" class="btn btn-outline-primary" style="width: 100%; text-align: center; margin-bottom: 15px; padding: 14px;">
+                            <i class="fas fa-arrow-left me-2"></i>Tiếp tục mua sắm
+                        </a>
+                        @if (Context.Session.GetString("UserId") != null)
+                        {
+                            <a href="#" class="btn btn-primary" style="width: 100%; text-align: center; padding: 16px; font-size: 16px;">
+                                <i class="fas fa-credit-card me-2"></i>Thanh toán
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account")" class="btn btn-primary" style="width: 100%; text-align: center; padding: 16px; font-size: 16px;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập để thanh toán
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 100px 20px;">
+            <i class="fas fa-shopping-cart" style="font-size: 120px; color: var(--text-muted); margin-bottom: 30px; opacity: 0.2;"></i>
+            <h2 style="margin-bottom: 15px; color: var(--text); font-size: 32px;">Giỏ hàng của bạn đang trống</h2>
+            <p style="color: var(--text-muted); margin-bottom: 40px; font-size: 18px;">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+            <a href="@Url.Action("Index", "Shop")" class="btn btn-primary" style="padding: 16px 50px; font-size: 18px;">
+                <i class="fas fa-shopping-bag me-2"></i>Mua sắm ngay
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function updateQuantity(productId, quantity) {
+            if (quantity < 1) quantity = 1;
+            
+            $.ajax({
+                url: '@Url.Action("UpdateQuantity", "Cart")',
+                type: 'POST',
+                data: { productId: productId, quantity: quantity },
+                success: function(response) {
+                    if (response.success) {
+                        $('#qty-' + productId).val(response.quantity || quantity);
+                        $('#subtotal-' + productId).text(response.subTotal.toLocaleString('vi-VN') + '₫');
+                        $('#cart-total').text(response.cartTotal.toLocaleString('vi-VN') + '₫');
+                        $('#cart-total-final').text(response.cartTotal.toLocaleString('vi-VN') + '₫');
+                        
+                        if (response.cartCount > 0) {
+                            $('.cart-badge').text(response.cartCount).show();
+                        } else {
+                            $('.cart-badge').hide();
+                        }
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                }
+            });
+        }
+
+        function removeItem(productId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("RemoveItem", "Cart")',
+                type: 'POST',
+                data: { productId: productId },
+                success: function(response) {
+                    if (response.success) {
+                        $('#cart-item-' + productId).fadeOut(function() {
+                            $(this).remove();
+                            if ($('.cart-item').length === 0) {
+                                location.reload();
+                            }
+                        });
+                        $('#cart-total').text(response.cartTotal.toLocaleString('vi-VN') + '₫');
+                        $('#cart-total-final').text(response.cartTotal.toLocaleString('vi-VN') + '₫');
+                        
+                        if (response.cartCount > 0) {
+                            $('.cart-badge').text(response.cartCount).show();
+                        } else {
+                            $('.cart-badge').hide();
+                        }
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                }
+            });
+        }
+    </script>
+}

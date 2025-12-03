@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><span>Đăng nhập</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container" style="max-width: 600px; margin: 100px auto; padding: 0 20px;">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="fas fa-user-lock"></i>
+            </div>
+            <h1 class="auth-title">Đăng nhập</h1>
+            <p class="auth-subtitle">Vui lòng đăng nhập bằng email của bạn để tiếp tục</p>
+        </div>
+        
+        <form asp-action="Login" method="post" class="auth-form">
+            <div asp-validation-summary="All" class="alert alert-danger" style="margin-bottom: 30px;"></div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email *</span>
+                </label>
+                <input type="email" name="email" id="email" class="form-control form-control-lg" required placeholder="Nhập email của bạn" autofocus>
+                <small class="form-text">
+                    <i class="fas fa-info-circle"></i>
+                    Ví dụ: yourname@gmail.com
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-lock"></i>
+                    <span>Mật khẩu *</span>
+                </label>
+                <input type="password" name="password" id="password" class="form-control form-control-lg" required placeholder="Nhập mật khẩu">
+            </div>
+
+            <div class="form-options">
+                <div class="form-check">
+                    <input type="checkbox" id="rememberMe" name="rememberMe" class="form-check-input">
+                    <label for="rememberMe" class="form-check-label">Ghi nhớ đăng nhập</label>
+                </div>
+                <a href="@Url.Action("ForgotPassword", "Account")" class="forgot-password-link">
+                    Quên mật khẩu?
+                </a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-auth">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Đăng nhập</span>
+            </button>
+
+            <div class="auth-footer">
+                <p>
+                    Chưa có tài khoản? 
+                    <a href="@Url.Action("Register", "Account")" class="auth-link">
+                        Đăng ký ngay
+                    </a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

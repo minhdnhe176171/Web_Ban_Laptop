@@ -1,0 +1,294 @@
+@model Web_Ban_Laptop.Models.Product
+@{
+    ViewData["Title"] = Model.ProductName;
+    var relatedProducts = ViewBag.RelatedProducts as List<Web_Ban_Laptop.Models.Product>;
+    var mainImage = Model.ProductImages?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&h=500&fit=crop";
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><a asp-controller="Shop" asp-action="Index">Sản phẩm</a></li>
+            <li><span>@Model.ProductName</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container">
+    <div class="product-detail-page">
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-md-6">
+                <div class="product-gallery">
+                    <div class="main-product-image">
+                        <img id="mainProductImage" src="@mainImage" alt="@Model.ProductName">
+                    </div>
+                    @if (Model.ProductImages != null && Model.ProductImages.Any())
+                    {
+                        <div class="thumbnail-gallery">
+                            @foreach (var image in Model.ProductImages.OrderBy(pi => pi.SortOrder))
+                            {
+                                <div class="thumbnail-item @(image == Model.ProductImages.First() ? "active" : "")" 
+                                     onclick="changeMainImage('@image.ImageUrl')">
+                                    <img src="@image.ImageUrl" alt="Thumbnail">
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-md-6">
+                <div class="product-detail-info">
+                    <div class="product-sku">SKU: @Model.ProductId</div>
+                    <h1>@Model.ProductName</h1>
+                    
+                    @if (!string.IsNullOrEmpty(Model.ShortDescription))
+                    {
+                        <p class="product-description">@Model.ShortDescription</p>
+                    }
+
+                    <div class="product-detail-price">
+                        @if (Model.DiscountPrice > 0 && Model.DiscountPrice < Model.Price)
+                        {
+                            <span class="price-old">@Model.Price.ToString("N0")₫</span>
+                        }
+                        <span class="price-current">@((Model.DiscountPrice ?? Model.Price).ToString("N0"))₫</span>
+                        @if (Model.DiscountPrice > 0)
+                        {
+                            <span class="price-discount">-@((int)((1 - (Model.DiscountPrice / Model.Price)) * 100))%</span>
+                        }
+                    </div>
+
+                    @{
+                        var avgRating = Model.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                            ? Model.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                            : 5;
+                        var ratingCount = Model.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                    }
+                    <div class="product-rating" style="margin-bottom: 35px;">
+                        <div class="stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                            }
+                        </div>
+                        <span class="reviews-count">(@ratingCount đánh giá)</span>
+                    </div>
+
+                    <div style="margin-bottom: 35px;">
+                        <label class="form-label">Số lượng:</label>
+                        <div class="quantity-control">
+                            <button type="button" onclick="decreaseQuantity()">-</button>
+                            <input type="number" id="quantity" value="1" min="1" style="width: 90px;">
+                            <button type="button" onclick="increaseQuantity()">+</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-bottom: 50px;">
+                        <button class="btn btn-primary" style="flex: 1; padding: 16px; font-size: 16px;" onclick="addToCartWithQuantity(@Model.ProductId)">
+                            <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ hàng
+                        </button>
+                        <button class="btn btn-outline-primary" style="padding: 16px 20px;">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <!-- Specifications Table -->
+                    @if (Model.ProductDetail != null)
+                    {
+                        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 25px; color: var(--text);">Thông số kỹ thuật</h3>
+                        <table class="product-specs-table">
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Cpu))
+                            {
+                                <tr>
+                                    <td>CPU</td>
+                                    <td>@Model.ProductDetail.Cpu</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Ram))
+                            {
+                                <tr>
+                                    <td>RAM</td>
+                                    <td>@Model.ProductDetail.Ram</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.HardDrive))
+                            {
+                                <tr>
+                                    <td>Ổ cứng</td>
+                                    <td>@Model.ProductDetail.HardDrive</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Screen))
+                            {
+                                <tr>
+                                    <td>Màn hình</td>
+                                    <td>@Model.ProductDetail.Screen</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Vga))
+                            {
+                                <tr>
+                                    <td>VGA</td>
+                                    <td>@Model.ProductDetail.Vga</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Os))
+                            {
+                                <tr>
+                                    <td>Hệ điều hành</td>
+                                    <td>@Model.ProductDetail.Os</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Battery))
+                            {
+                                <tr>
+                                    <td>Pin</td>
+                                    <td>@Model.ProductDetail.Battery</td>
+                                </tr>
+                            }
+                            @if (Model.ProductDetail.Weight.HasValue)
+                            {
+                                <tr>
+                                    <td>Trọng lượng</td>
+                                    <td>@Model.ProductDetail.Weight kg</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ProductDetail.Warranty))
+                            {
+                                <tr>
+                                    <td>Bảo hành</td>
+                                    <td>@Model.ProductDetail.Warranty</td>
+                                </tr>
+                            }
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    @if (Model.Feedbacks != null && Model.Feedbacks.Any())
+    {
+        <div class="reviews-section">
+            <h3>Đánh giá sản phẩm (@Model.Feedbacks.Count)</h3>
+            @foreach (var feedback in Model.Feedbacks.OrderByDescending(f => f.FeedbackDate))
+            {
+                <div class="review-item">
+                    <div class="review-header">
+                        <div>
+                            <div class="review-author">@(feedback.User?.FullName ?? feedback.User?.Username ?? "Khách hàng")</div>
+                            <div class="review-date">@feedback.FeedbackDate?.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                        @if (feedback.Rating.HasValue)
+                        {
+                            <div class="review-rating">
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star@(i <= feedback.Rating.Value ? "" : "-o")"></i>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(feedback.Comment))
+                    {
+                        <div class="review-comment">@feedback.Comment</div>
+                    }
+                    @if (!string.IsNullOrEmpty(feedback.Reply))
+                    {
+                        <div class="review-reply">
+                            <strong>Phản hồi từ cửa hàng:</strong>
+                            <p style="margin: 8px 0 0 0; color: var(--text-muted);">@feedback.Reply</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="reviews-section">
+            <h3>Đánh giá sản phẩm</h3>
+            <p style="text-align: center; color: var(--text-muted); padding: 60px 0; font-size: 16px;">
+                Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!
+            </p>
+        </div>
+    }
+
+    <!-- Related Products -->
+    @if (relatedProducts != null && relatedProducts.Any())
+    {
+        <div style="margin-top: 80px;">
+            <div class="section-header">
+                <h2 class="section-title">Sản phẩm liên quan</h2>
+            </div>
+            <div class="product-grid">
+                @foreach (var product in relatedProducts)
+                {
+                    <div class="product-card">
+                        <div class="product-image">
+                            @if (product.DiscountPrice > 0)
+                            {
+                                <span class="product-badge discount">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                            }
+                            <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                        </div>
+                        <div class="product-info">
+                            <h6 class="product-name">@product.ProductName</h6>
+                            <div class="product-price-wrapper">
+                                <div class="product-price">
+                                    <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                    @if (product.DiscountPrice > 0 && product.DiscountPrice < product.Price)
+                                    {
+                                        <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                    }
+                                </div>
+                                <div class="product-rating">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="reviews-count">(@(product.Feedbacks?.Count ?? 0))</span>
+                                </div>
+                            </div>
+                            <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function changeMainImage(imageUrl) {
+            document.getElementById('mainProductImage').src = imageUrl;
+            document.querySelectorAll('.thumbnail-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // Quantity functions are now in site.js (increaseQuantity, decreaseQuantity)
+        // But we keep them here for this page-specific implementation
+
+        // Override addToCart to get quantity from input
+        function addToCartWithQuantity(productId) {
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            addToCart(productId, quantity);
+        }
+    </script>
+}

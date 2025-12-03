@@ -1,0 +1,155 @@
+@{
+    ViewData["Title"] = "Sản phẩm yêu thích";
+    var products = ViewBag.Products as List<Web_Ban_Laptop.Models.Product>;
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><span>Yêu thích</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container" style="margin-bottom: 60px;">
+    <h1 style="font-size: 38px; font-weight: 700; margin-bottom: 40px; color: var(--text);">Sản phẩm yêu thích</h1>
+
+    @if (products != null && products.Any())
+    {
+        <div class="product-grid">
+            @foreach (var product in products)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-actions-overlay">
+                            <button class="product-action-btn" onclick="quickView(@product.ProductId)" title="Xem nhanh">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="toggleWishlist(@product.ProductId)" title="Xóa khỏi yêu thích" style="color: var(--danger);">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="addToCompare(@product.ProductId)" title="So sánh">
+                                <i class="fas fa-balance-scale"></i>
+                            </button>
+                        </div>
+                        @if (product.DiscountPrice > 0)
+                        {
+                            <span class="product-badge discount">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                        }
+                        <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                    </div>
+                    <div class="product-info">
+                        <h6 class="product-name">@product.ProductName</h6>
+                        <div class="product-price-wrapper">
+                            <div class="product-price">
+                                <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                @if (product.DiscountPrice > 0 && product.DiscountPrice < product.Price)
+                                {
+                                    <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                }
+                            </div>
+                            @{
+                                var avgRating = product.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                                    ? product.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                                    : 0;
+                                var ratingCount = product.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                            }
+                            <div class="product-rating">
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                                    }
+                                </div>
+                                <span class="reviews-count">(@ratingCount)</span>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 80px 20px;">
+            <i class="fas fa-heart" style="font-size: 100px; color: var(--text-muted); margin-bottom: 30px; opacity: 0.3;"></i>
+            <h2 style="margin-bottom: 15px; color: var(--text);">Chưa có sản phẩm yêu thích</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 16px;">Thêm sản phẩm vào yêu thích để xem lại sau</p>
+            <a href="@Url.Action("Index", "Shop")" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px;">
+                <i class="fas fa-shopping-bag me-2"></i>Mua sắm ngay
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function quickView(productId) {
+            $('#quickViewModal').modal('show');
+            $('#quickViewContent').html('<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 32px;"></i></div>');
+            
+            $.ajax({
+                url: '@Url.Action("QuickView", "Shop")',
+                type: 'GET',
+                data: { id: productId },
+                success: function(response) {
+                    $('#quickViewContent').html(response);
+                }
+            });
+        }
+
+        function toggleWishlist(productId) {
+            $.ajax({
+                url: '@Url.Action("Toggle", "Wishlist")',
+                type: 'POST',
+                data: { productId: productId },
+                success: function(response) {
+                    if (response.success && !response.isInWishlist) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        function addToCompare(productId) {
+            $.ajax({
+                url: '@Url.Action("AddToCompare", "Compare")',
+                type: 'POST',
+                data: { productId: productId },
+                success: function(response) {
+                    if (response.success) {
+                        showNotification(response.message);
+                    } else {
+                        showNotification(response.message, 'warning');
+                    }
+                }
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            var bgColor = type === 'success' ? 'var(--success)' : 'var(--warning)';
+            var notification = $('<div>').css({
+                'position': 'fixed',
+                'top': '20px',
+                'right': '20px',
+                'background': bgColor,
+                'color': 'white',
+                'padding': '15px 20px',
+                'border-radius': '8px',
+                'z-index': '10000',
+                'box-shadow': 'var(--shadow-lg)'
+            }).text(message);
+            
+            $('body').append(notification);
+            setTimeout(function() {
+                notification.fadeOut(function() { $(this).remove(); });
+            }, 3000);
+        }
+    </script>
+}
+

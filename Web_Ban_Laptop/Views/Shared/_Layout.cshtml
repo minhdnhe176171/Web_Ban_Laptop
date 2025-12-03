@@ -1,46 +1,202 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using Microsoft.AspNetCore.Http
+@using Web_Ban_Laptop.Services
+@inject CartService CartService
+@{
+    var cartCount = CartService.GetCartCount(Context.Session);
+    var username = Context.Session.GetString("Username");
+    var fullName = Context.Session.GetString("FullName");
+    var email = Context.Session.GetString("Email");
+}
+
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Web_Ban_Laptop</title>
+    <title>@ViewData["Title"] - LaptopStore</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Web_Ban_Laptop.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Web_Ban_Laptop</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+    <!-- Header Top Bar -->
+    <div class="header-top-bar">
+        <div class="container header-top-bar-container">
+            <div class="header-top-bar-content">
+                <div class="header-top-bar-left">
+                    <small>
+                        <i class="fas fa-phone"></i>
+                        <span>Hotline: 1900.5301</span>
+                        <span class="header-separator">|</span>
+                        <i class="fas fa-truck"></i>
+                        <span>Miễn phí vận chuyển toàn quốc</span>
+                        <span class="header-separator header-separator-large">|</span>
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Uy tín</span>
+                        <span class="header-separator">•</span>
+                        <i class="fas fa-star"></i>
+                        <span>Chất lượng</span>
+                        <span class="header-separator">•</span>
+                        <i class="fas fa-headset"></i>
+                        <span>Hỗ trợ 24/7</span>
+                    </small>
+                </div>
+                <div class="header-top-bar-right">
+                    @if (username != null)
+                    {
+                        <div class="header-user-greeting">
+                            <i class="fas fa-user-circle" style="color: var(--razer-green); font-size: 18px;"></i>
+                            <span>Xin chào, <strong>@(fullName ?? email ?? username)</strong></span>
+                        </div>
+                        <a href="@Url.Action("Logout", "Account")" class="header-auth-btn logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Đăng xuất</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="header-main">
+        <div class="container header-main-container">
+            <div class="d-flex align-items-center justify-content-between" style="flex-wrap: nowrap !important; width: 100%; gap: 8px;">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index" style="flex-shrink: 0; margin-right: 10px;">
+                    <i class="fas fa-laptop-code"></i>
+                    <span style="font-family: 'Arial Black', sans-serif; letter-spacing: 2px;">LAPTOPSTORE</span>
+                </a>
+                <ul class="navbar-nav d-flex flex-row" style="flex: 1; justify-content: center; margin: 0 10px; flex-wrap: nowrap !important;">
+                    <li><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li><a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Shop" ? "active" : "")" asp-controller="Shop" asp-action="Index">Sản phẩm</a></li>
+                    <li><a class="nav-link" href="#">Khuyến mãi</a></li>
+                    <li><a class="nav-link" href="#">Liên hệ</a></li>
+                </ul>
+                <div class="d-flex align-items-center" style="flex-shrink: 0; gap: 5px; flex-wrap: nowrap !important;">
+                    <form class="search-box-wrapper" method="get" action="@Url.Action("Search", "Shop")">
+                        <input type="text" name="q" placeholder="Tìm kiếm sản phẩm..." value="@ViewBag.SearchQuery" required>
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                    <div class="header-actions">
+                        @if (username == null)
+                        {
+                            <a href="@Url.Action("Login", "Account")" class="cart-icon-wrapper" title="Đăng nhập">
+                                <i class="fas fa-user"></i>
+                                <span>Đăng nhập</span>
+                            </a>
+                            <a href="@Url.Action("Register", "Account")" class="cart-icon-wrapper" title="Đăng ký">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Đăng ký</span>
+                            </a>
+                        }
+                        <a href="@Url.Action("Index", "Wishlist")" class="cart-icon-wrapper" title="Yêu thích">
+                            <i class="fas fa-heart"></i>
+                            <span>Yêu thích</span>
+                        </a>
+                        <a href="@Url.Action("Index", "Compare")" class="cart-icon-wrapper" title="So sánh">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>So sánh</span>
+                        </a>
+                        <a href="@Url.Action("Index", "Cart")" class="cart-icon-wrapper">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Giỏ hàng</span>
+                            @if (cartCount > 0)
+                            {
+                                <span class="cart-badge">@cartCount</span>
+                            }
+                        </a>
+                        @if (username != null)
+                        {
+                            <div class="user-menu">
+                                <div class="header-user-greeting-small">
+                                    <i class="fas fa-user-circle" style="color: var(--razer-green); font-size: 20px;"></i>
+                                    <span>@(fullName ?? email ?? username)</span>
+                                </div>
+                                <a href="@Url.Action("Logout", "Account")" class="cart-icon-wrapper logout-link" title="Đăng xuất">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Đăng xuất</span>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="container mt-3">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="filter: brightness(0) invert(1);"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="container mt-3">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="filter: brightness(0) invert(1);"></button>
+                </div>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h5><i class="fas fa-store me-2"></i>Về chúng tôi</h5>
+                    <p style="color: var(--text-muted); font-size: 15px; line-height: 1.8; margin-bottom: 25px;">
+                        Chuyên cung cấp laptop, PC và phụ kiện công nghệ chính hãng với giá tốt nhất thị trường.
+                    </p>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="font-size: 24px; color: var(--text-muted);"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="font-size: 24px; color: var(--text-muted);"><i class="fab fa-youtube"></i></a>
+                        <a href="#" style="font-size: 24px; color: var(--text-muted);"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h5>Thông tin</h5>
+                    <ul>
+                        <li><a href="#">Giới thiệu</a></li>
+                        <li><a href="#">Hướng dẫn mua hàng</a></li>
+                        <li><a href="#">Hướng dẫn thanh toán</a></li>
+                        <li><a href="#">Tra cứu đơn hàng</a></li>
+                        <li><a href="#">Tuyển dụng</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h5>Chính sách</h5>
+                    <ul>
+                        <li><a href="#">Chính sách bảo hành</a></li>
+                        <li><a href="#">Chính sách đổi trả</a></li>
+                        <li><a href="#">Chính sách giao hàng</a></li>
+                        <li><a href="#">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h5>Liên hệ</h5>
+                    <ul>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-phone me-2"></i><strong>Hotline:</strong> 1900.5301</li>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-envelope me-2"></i><strong>Email:</strong> support@laptopstore.com</li>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-clock me-2"></i><strong>Giờ làm việc:</strong> 8:00 - 21:00</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i>123 Đường ABC, Quận XYZ, TP.HCM</li>
                     </ul>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Web_Ban_Laptop - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="footer-bottom">
+                <p>&copy; 2025 LaptopStore. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

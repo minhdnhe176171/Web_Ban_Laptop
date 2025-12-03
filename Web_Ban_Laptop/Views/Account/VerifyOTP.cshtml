@@ -1,0 +1,81 @@
+@{
+    ViewData["Title"] = "Xác thực OTP";
+    var userId = ViewBag.UserId;
+    var email = ViewBag.Username;
+}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-nav">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li><span>Xác thực OTP</span></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container" style="max-width: 600px; margin: 100px auto; padding: 0 20px;">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-icon auth-icon-otp">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h1 class="auth-title">Xác thực OTP</h1>
+            <p class="auth-subtitle">
+                Mã OTP đã được gửi đến email <strong class="email-highlight">@email</strong>. 
+                Vui lòng kiểm tra và nhập mã OTP để hoàn tất đăng nhập.
+            </p>
+        </div>
+        
+        <form asp-action="VerifyOTP" method="post" class="auth-form">
+            <input type="hidden" name="userId" value="@userId" />
+            
+            <div asp-validation-summary="All" class="alert alert-danger" style="margin-bottom: 30px;"></div>
+
+            <div class="form-group">
+                <label class="form-label" style="text-align: center; display: block; margin-bottom: 20px;">
+                    <i class="fas fa-key"></i>
+                    <span>Mã OTP *</span>
+                </label>
+                <input type="text" name="otpCode" id="otpCode" class="form-control form-control-otp" 
+                       maxlength="6" required pattern="[0-9]{6}" placeholder="000000" autofocus>
+                <small class="form-text" style="text-align: center;">
+                    <i class="fas fa-info-circle"></i>
+                    Nhập 6 chữ số từ email của bạn
+                </small>
+            </div>
+
+            <div class="auth-info-box auth-info-box-warning">
+                <i class="fas fa-clock"></i>
+                <p>Mã OTP có thời hạn 10 phút. Vui lòng nhập mã trong thời gian này.</p>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-auth">
+                <i class="fas fa-check"></i>
+                <span>Xác nhận</span>
+            </button>
+
+            <div class="auth-footer">
+                <p style="margin-bottom: 15px;">Không nhận được mã?</p>
+                <a href="@Url.Action("Login", "Account")" class="auth-link">
+                    <i class="fas fa-redo"></i>
+                    Thử lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('otpCode').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('otpCode').addEventListener('input', function(e) {
+            if (this.value.length === 6) {
+                this.form.submit();
+            }
+        });
+    </script>
+}

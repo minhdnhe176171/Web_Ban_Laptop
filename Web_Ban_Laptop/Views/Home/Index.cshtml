@@ -1,8 +1,390 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Trang chủ";
+    var newestProducts = ViewBag.NewestProducts as List<Web_Ban_Laptop.Models.Product>;
+    var bestSellingProducts = ViewBag.BestSellingProducts as List<Web_Ban_Laptop.Models.Product>;
+    var discountedProducts = ViewBag.DiscountedProducts as List<Web_Ban_Laptop.Models.Product>;
+    var categories = ViewBag.Categories as List<Web_Ban_Laptop.Models.Category>;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Notification Bar -->
+<div class="notification-bar">
+    <div class="container">
+        <div class="notification-content">
+            <i class="fas fa-gift me-2"></i>
+            <span>🎉 Khuyến mãi đặc biệt: Giảm giá lên đến 50% cho tất cả sản phẩm laptop gaming!</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
 </div>
+
+<!-- Banner Carousel -->
+<section class="banner-carousel-section">
+    <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="banner-slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="container">
+                        <div class="banner-content">
+                            <div class="banner-text">
+                                <h2>Laptop Gaming Cao Cấp</h2>
+                                <p>Hiệu năng mạnh mẽ, đồ họa vượt trội cho trải nghiệm gaming đỉnh cao</p>
+                                <a href="@Url.Action("Index", "Shop")" class="btn-banner">Mua ngay</a>
+                            </div>
+                            <div class="banner-image">
+                                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=500&fit=crop" alt="Laptop Gaming">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="banner-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="container">
+                        <div class="banner-content">
+                            <div class="banner-text">
+                                <h2>Laptop Văn Phòng</h2>
+                                <p>Nhẹ nhàng, bền bỉ, hiệu năng ổn định cho công việc hàng ngày</p>
+                                <a href="@Url.Action("Index", "Shop")" class="btn-banner">Khám phá</a>
+                            </div>
+                            <div class="banner-image">
+                                <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&h=500&fit=crop" alt="Laptop Văn Phòng">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="banner-slide" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="container">
+                        <div class="banner-content">
+                            <div class="banner-text">
+                                <h2>Siêu Giảm Giá</h2>
+                                <p>Giảm giá lên đến 50% cho tất cả sản phẩm. Mua ngay kẻo hết!</p>
+                                <a href="@Url.Action("Index", "Shop")" class="btn-banner">Xem ngay</a>
+                            </div>
+                            <div class="banner-image">
+                                <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=500&fit=crop" alt="Khuyến mãi">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+</section>
+
+<!-- Categories Section -->
+@if (categories != null && categories.Any())
+{
+    <section class="container" style="margin-top: 60px;">
+        <div class="section-header">
+            <h2 class="section-title">Danh mục sản phẩm</h2>
+        </div>
+        <div class="categories-grid">
+            @foreach (var category in categories)
+            {
+                <a href="@Url.Action("Index", "Shop", new { categoryId = category.CategoryId })" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                    <h4>@category.CategoryName</h4>
+                    <p>@(category.Products?.Count ?? 0) sản phẩm</p>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<!-- Top 10 Sản phẩm mới nhất -->
+@if (newestProducts != null && newestProducts.Any())
+{
+    <section class="container" style="margin-top: 80px;">
+        <div class="section-header">
+            <h2 class="section-title">Sản phẩm mới nhất</h2>
+            <a href="@Url.Action("Index", "Shop")" style="color: var(--primary); font-weight: 600; text-decoration: none; font-size: 16px;">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="product-grid">
+            @foreach (var product in newestProducts)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-actions-overlay">
+                            <button class="product-action-btn" onclick="quickView(@product.ProductId)" title="Xem nhanh">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="toggleWishlist(@product.ProductId)" title="Yêu thích">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="addToCompare(@product.ProductId)" title="So sánh">
+                                <i class="fas fa-balance-scale"></i>
+                            </button>
+                        </div>
+                        @if (product.DiscountPrice > 0)
+                        {
+                            <span class="product-badge discount">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                        }
+                        <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                    </div>
+                    <div class="product-info">
+                        <h6 class="product-name">@product.ProductName</h6>
+                        <div class="product-price-wrapper">
+                            <div class="product-price">
+                                <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                @if (product.DiscountPrice > 0 && product.DiscountPrice < product.Price)
+                                {
+                                    <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                }
+                            </div>
+                            @{
+                                var avgRating = product.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                                    ? product.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                                    : 0;
+                                var ratingCount = product.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                            }
+                            <div class="product-rating">
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                                    }
+                                </div>
+                                <span class="reviews-count">(@ratingCount)</span>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Top sản phẩm bán chạy -->
+@if (bestSellingProducts != null && bestSellingProducts.Any())
+{
+    <section class="container" style="margin-top: 100px;">
+        <div class="section-header">
+            <h2 class="section-title">Sản phẩm bán chạy</h2>
+            <a href="@Url.Action("Index", "Shop")" style="color: var(--primary); font-weight: 600; text-decoration: none; font-size: 16px;">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="product-grid">
+            @foreach (var product in bestSellingProducts)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-actions-overlay">
+                            <button class="product-action-btn" onclick="quickView(@product.ProductId)" title="Xem nhanh">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="toggleWishlist(@product.ProductId)" title="Yêu thích">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="addToCompare(@product.ProductId)" title="So sánh">
+                                <i class="fas fa-balance-scale"></i>
+                            </button>
+                        </div>
+                        <span class="product-badge hot">HOT</span>
+                        @if (product.DiscountPrice > 0)
+                        {
+                            <span class="product-badge discount" style="top: 55px;">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                        }
+                        <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                    </div>
+                    <div class="product-info">
+                        <h6 class="product-name">@product.ProductName</h6>
+                        <div class="product-price-wrapper">
+                            <div class="product-price">
+                                <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                @if (product.DiscountPrice > 0 && product.DiscountPrice < product.Price)
+                                {
+                                    <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                }
+                            </div>
+                            @{
+                                var avgRating = product.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                                    ? product.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                                    : 0;
+                                var ratingCount = product.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                            }
+                            <div class="product-rating">
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                                    }
+                                </div>
+                                <span class="reviews-count">(@ratingCount)</span>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Laptop đang giảm giá -->
+@if (discountedProducts != null && discountedProducts.Any())
+{
+    <section class="container" style="margin-top: 100px; margin-bottom: 100px;">
+        <div class="section-header">
+            <h2 class="section-title">Laptop đang giảm giá</h2>
+            <a href="@Url.Action("Index", "Shop")" style="color: var(--primary); font-weight: 600; text-decoration: none; font-size: 16px;">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="product-grid">
+            @foreach (var product in discountedProducts)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-actions-overlay">
+                            <button class="product-action-btn" onclick="quickView(@product.ProductId)" title="Xem nhanh">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="toggleWishlist(@product.ProductId)" title="Yêu thích">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="product-action-btn" onclick="addToCompare(@product.ProductId)" title="So sánh">
+                                <i class="fas fa-balance-scale"></i>
+                            </button>
+                        </div>
+                        <span class="product-badge discount">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                        <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                    </div>
+                    <div class="product-info">
+                        <h6 class="product-name">@product.ProductName</h6>
+                        <div class="product-price-wrapper">
+                            <div class="product-price">
+                                <span class="price-current">@product.DiscountPrice.Value.ToString("N0")₫</span>
+                                <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                <span class="price-discount">Tiết kiệm @((product.Price - product.DiscountPrice).Value.ToString("N0"))₫</span>
+                            </div>
+                            @{
+                                var avgRating = product.Feedbacks?.Where(f => f.Rating.HasValue).Any() == true 
+                                    ? product.Feedbacks.Where(f => f.Rating.HasValue).Average(f => f.Rating.Value) 
+                                    : 0;
+                                var ratingCount = product.Feedbacks?.Count(f => f.Rating.HasValue) ?? 0;
+                            }
+                            <div class="product-rating">
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star@(i <= (int)avgRating ? "" : "-o")"></i>
+                                    }
+                                </div>
+                                <span class="reviews-count">(@ratingCount)</span>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Recently Viewed Products -->
+@{
+    var viewedProducts = ViewBag.ViewedProducts as List<Web_Ban_Laptop.Models.Product>;
+    if (viewedProducts != null && viewedProducts.Any())
+    {
+            <section class="container" style="margin-top: 100px; margin-bottom: 100px;">
+                <div class="section-header">
+                    <h2 class="section-title">Sản phẩm đã xem gần đây</h2>
+                </div>
+                <div class="product-grid">
+                    @foreach (var product in viewedProducts)
+                    {
+                        <div class="product-card">
+                            <div class="product-image">
+                                <div class="product-actions-overlay">
+                                    <button class="product-action-btn" onclick="quickView(@product.ProductId)" title="Xem nhanh">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="product-action-btn" onclick="toggleWishlist(@product.ProductId)" title="Yêu thích">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    <button class="product-action-btn" onclick="addToCompare(@product.ProductId)" title="So sánh">
+                                        <i class="fas fa-balance-scale"></i>
+                                    </button>
+                                </div>
+                                @if (product.DiscountPrice > 0)
+                                {
+                                    <span class="product-badge discount">-@((int)((1 - (product.DiscountPrice / product.Price)) * 100))%</span>
+                                }
+                                <img src="@(product.Thumbnail ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop")" alt="@product.ProductName">
+                            </div>
+                            <div class="product-info">
+                                <h6 class="product-name">@product.ProductName</h6>
+                                <div class="product-price-wrapper">
+                                    <div class="product-price">
+                                        <span class="price-current">@((product.DiscountPrice ?? product.Price).ToString("N0"))₫</span>
+                                        @if (product.DiscountPrice > 0 && product.DiscountPrice < product.Price)
+                                        {
+                                            <span class="price-old">@product.Price.ToString("N0")₫</span>
+                                        }
+                                    </div>
+                                </div>
+                                <a href="@Url.Action("Details", "Product", new { id = product.ProductId })" class="btn-add-to-cart">
+                                    <i class="fas fa-eye"></i> Xem lại
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    }
+}
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background: var(--dark-light); border: 1px solid var(--border);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border);">
+                <h5 class="modal-title" style="color: var(--text);">Xem nhanh sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: brightness(0) invert(1);"></button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px;"></i>
+                    <p style="margin-top: 15px;">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Support Button -->
+<div class="chat-support-btn" onclick="openChat()">
+    <i class="fas fa-comments"></i>
+    <span class="chat-badge">Hỗ trợ</span>
+</div>
+
+@section Scripts {
+    <script>
+        // All functions are now in site.js - no need to duplicate here
+        // Functions available: quickView, toggleWishlist, addToCompare, addToCart, showNotification, openChat
+    </script>
+}
