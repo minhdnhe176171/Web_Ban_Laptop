@@ -50,14 +50,19 @@ public partial class LaptopStoreDbFinalContext : DbContext
     public virtual DbSet<Wishlist> Wishlists { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("server =DESKTOP-FHDMQHT; database = LaptopStoreDB_Final;uid=sa;pwd=123;TrustServerCertificate=true");
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("MyCnn");
+            optionsBuilder.UseSqlServer(ConnectionString);
+        }
 
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("PK__Categori__19093A2B3B05553D");
+            entity.HasKey(e => e.CategoryId).HasName("PK__Categori__19093A2B2F214345");
 
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CategoryName).HasMaxLength(100);
@@ -65,7 +70,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDF6D6F5F8B9");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDF682E83555");
 
             entity.Property(e => e.FeedbackId).HasColumnName("FeedbackID");
             entity.Property(e => e.FeedbackDate)
@@ -88,7 +93,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<ImportOrder>(entity =>
         {
-            entity.HasKey(e => e.ImportId).HasName("PK__ImportOr__8697678A0CDA6678");
+            entity.HasKey(e => e.ImportId).HasName("PK__ImportOr__8697678A2D1F6E1F");
 
             entity.Property(e => e.ImportId).HasColumnName("ImportID");
             entity.Property(e => e.ImportDate)
@@ -113,7 +118,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<ImportOrderDetail>(entity =>
         {
-            entity.HasKey(e => e.ImportDetailId).HasName("PK__ImportOr__CDFBBA51C1C59F11");
+            entity.HasKey(e => e.ImportDetailId).HasName("PK__ImportOr__CDFBBA513518CAF7");
 
             entity.ToTable(tb => tb.HasTrigger("trg_Import_UpdateStock"));
 
@@ -135,7 +140,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<InventoryLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__Inventor__5E5499A8747D7F8C");
+            entity.HasKey(e => e.LogId).HasName("PK__Inventor__5E5499A874F6D157");
 
             entity.Property(e => e.LogId).HasColumnName("LogID");
             entity.Property(e => e.ActionDate)
@@ -153,7 +158,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.OrderId).HasName("PK__Orders__C3905BAFE33B5447");
+            entity.HasKey(e => e.OrderId).HasName("PK__Orders__C3905BAFD63562DA");
 
             entity.ToTable(tb => tb.HasTrigger("trg_Order_Cancel_ReturnStock"));
 
@@ -187,7 +192,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__D3B9D30C81D2A531");
+            entity.HasKey(e => e.OrderDetailId).HasName("PK__OrderDet__D3B9D30CEF7CB72D");
 
             entity.ToTable(tb => tb.HasTrigger("trg_Order_Insert_DeductStock"));
 
@@ -209,7 +214,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<OrderStatus>(entity =>
         {
-            entity.HasKey(e => e.StatusId).HasName("PK__OrderSta__C8EE2043525C8871");
+            entity.HasKey(e => e.StatusId).HasName("PK__OrderSta__C8EE2043F419837E");
 
             entity.Property(e => e.StatusId).HasColumnName("StatusID");
             entity.Property(e => e.StatusName).HasMaxLength(50);
@@ -217,7 +222,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.ProductId).HasName("PK__Products__B40CC6EDD9A4B260");
+            entity.HasKey(e => e.ProductId).HasName("PK__Products__B40CC6EDF9FAA0AE");
 
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
@@ -245,9 +250,9 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<ProductDetail>(entity =>
         {
-            entity.HasKey(e => e.DetailId).HasName("PK__ProductD__135C314D94A7EFCA");
+            entity.HasKey(e => e.DetailId).HasName("PK__ProductD__135C314DC150FA0F");
 
-            entity.HasIndex(e => e.ProductId, "UQ__ProductD__B40CC6EC6B69B03B").IsUnique();
+            entity.HasIndex(e => e.ProductId, "UQ__ProductD__B40CC6ECFE7DC1C3").IsUnique();
 
             entity.Property(e => e.DetailId).HasColumnName("DetailID");
             entity.Property(e => e.Battery).HasMaxLength(50);
@@ -276,7 +281,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<ProductImage>(entity =>
         {
-            entity.HasKey(e => e.ImageId).HasName("PK__ProductI__7516F4EC9C5B2383");
+            entity.HasKey(e => e.ImageId).HasName("PK__ProductI__7516F4EC294950AE");
 
             entity.Property(e => e.ImageId).HasColumnName("ImageID");
             entity.Property(e => e.ImageUrl)
@@ -293,9 +298,9 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<ProductSerial>(entity =>
         {
-            entity.HasKey(e => e.SerialId).HasName("PK__ProductS__5E5B3EC437FA769A");
+            entity.HasKey(e => e.SerialId).HasName("PK__ProductS__5E5B3EC4B8532A2E");
 
-            entity.HasIndex(e => e.SerialNumber, "UQ__ProductS__048A00083D8FD609").IsUnique();
+            entity.HasIndex(e => e.SerialNumber, "UQ__ProductS__048A0008BB3590C0").IsUnique();
 
             entity.Property(e => e.SerialId).HasColumnName("SerialID");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
@@ -312,9 +317,9 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE3A92BD43DB");
+            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE3ABFF61643");
 
-            entity.HasIndex(e => e.RoleName, "UQ__Roles__8A2B6160C3E36DC7").IsUnique();
+            entity.HasIndex(e => e.RoleName, "UQ__Roles__8A2B6160BDC1ABC9").IsUnique();
 
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
             entity.Property(e => e.Description).HasMaxLength(200);
@@ -323,7 +328,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Supplier>(entity =>
         {
-            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE666940683C071");
+            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE66694CC0F95F1");
 
             entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
             entity.Property(e => e.Address).HasMaxLength(255);
@@ -340,11 +345,11 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC5EBBF5E4");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCACC7F234F0");
 
-            entity.HasIndex(e => e.Username, "UQ__Users__536C85E46A063E80").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4B53FFD9A").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D105343E181698").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D105343F5D5492").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.Address).HasMaxLength(255);
@@ -382,9 +387,9 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Voucher>(entity =>
         {
-            entity.HasKey(e => e.VoucherId).HasName("PK__Vouchers__3AEE79C13E399BCA");
+            entity.HasKey(e => e.VoucherId).HasName("PK__Vouchers__3AEE79C19DE2D5A4");
 
-            entity.HasIndex(e => e.Code, "UQ__Vouchers__A25C5AA7C30B3371").IsUnique();
+            entity.HasIndex(e => e.Code, "UQ__Vouchers__A25C5AA78EAC0A81").IsUnique();
 
             entity.Property(e => e.VoucherId).HasColumnName("VoucherID");
             entity.Property(e => e.Code)
@@ -403,7 +408,7 @@ public partial class LaptopStoreDbFinalContext : DbContext
 
         modelBuilder.Entity<Wishlist>(entity =>
         {
-            entity.HasKey(e => e.WishlistId).HasName("PK__Wishlist__233189CB6733C6B8");
+            entity.HasKey(e => e.WishlistId).HasName("PK__Wishlist__233189CB9E45C468");
 
             entity.HasIndex(e => new { e.UserId, e.ProductId }, "UK_Wishlist").IsUnique();
 
